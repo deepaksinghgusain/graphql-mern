@@ -1,28 +1,20 @@
 const express = require('express');
 const { ApolloServer } = require('apollo-server-express');
-const {
-    ApolloServerPluginDrainHttpServer,
-    ApolloServerPluginLandingPageGraphQLPlayground
-} = require('apollo-server-core');
+const { ApolloServerPluginLandingPageGraphQLPlayground } = require('apollo-server-core');
 const dotenv = require('dotenv').config();
 const http = require('http');
+const path = require('path');
+const { mergeTypeDefs, mergeResolvers } = require("@graphql-tools/merge");
+const { loadFilesSync } = require("@graphql-tools/load-files");
 
 // Create App 
 const app = express();
 
-// type  query / mutation /subscription
-const typeDefs = `
-    type Query {
-        totalPosts: Int! 
-    }
-`;
-
-//resolver
-const resolvers = {
-    Query: {
-        totalPosts: () => 42
-    }
-}
+// typeDefs
+const typeDefs = mergeTypeDefs(loadFilesSync(path.join(__dirname, "./typeDefs")));
+ 
+// resolvers
+const resolvers = mergeResolvers(loadFilesSync(path.join(__dirname, "./resolvers")));
 
 async function startApolloServer() {
 
@@ -47,7 +39,7 @@ async function startApolloServer() {
         console.log(`listening on port on ${process.env.PORT}`);
     })
 
-    return { apolloServer, app }; 
+    return { apolloServer, app };
 }
 
 startApolloServer();
